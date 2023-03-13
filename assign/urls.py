@@ -25,20 +25,16 @@ from rest_framework.routers import DefaultRouter
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from todo.views import LoginView
+#from todo.views import LoginView
 from todo import router as todo_api_router
 
-router = DefaultRouter()
-app_name = 'api_urls'
 
 
 
 urlpatterns = [
     path('backend/admin/', admin.site.urls),
-    path('backend/api/', include(todo_api_router.router.urls)),
-    path('backend/api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('backend/api/token/refresh/', TokenRefreshView.as_view(),name='token_refresh'),
-    path('backend/api/login/', LoginView.as_view(), name='login'),
+    path('backend/api/', include('assign.api_urls')),
+    path('backend/api-auth/', include('rest_framework.urls', 'api-auth')),
+    #path('backend/api/', include(todo_api_router.router.urls)),
     #path(r'todolist/',include(todo_api_router.router.urls)),
 ]
-urlpatterns += router.urls

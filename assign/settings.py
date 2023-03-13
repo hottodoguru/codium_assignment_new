@@ -72,9 +72,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'assign.wsgi.application'
 
-authentication_classes = (
-    'rest_framework_simplejwt.authentication.JWTAuthentication',
-)
+
 renderer_classes = (
     'rest_framework.renderers.JSONRenderer',
 )
@@ -95,7 +93,13 @@ renderer_classes = (
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+        'rest_framework.authentication.SessionAuthentication',
+
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    
 }
 
 # Database
@@ -136,11 +140,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Bangkok'
 
-USE_I18N = True
+USE_I18N = False
 
-USE_TZ = True
+USE_TZ = False
+
+DATETIME_FORMAT="%Y-%m-%d %H:%M"
 
 
 # Static files (CSS, JavaScript, Images)

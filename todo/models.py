@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User,AbstractUser
 from django.conf import settings
 # Create your models here.
  
@@ -15,5 +15,5 @@ class Todo(models.Model):
     description = models.CharField(max_length=255)
     status = models.BooleanField(default=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    date = models.DateField(auto_now=True)
+    date = models.DateTimeField(auto_now=True)
 
