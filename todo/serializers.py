@@ -116,4 +116,9 @@ class TodoSerializer(serializers.ModelSerializer):
                     }
         
 
+class TodoSerializerNotAuthenticated(serializers.ModelSerializer):
 
+    class Meta:
+        model = Todo
+        fields = ['name']
+        

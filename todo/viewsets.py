@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from .models import Todo
-from .serializers import TodoSerializer,UserSerializer
+from .serializers import TodoSerializer, UserSerializer, TodoSerializerNotAuthenticated
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -10,26 +10,35 @@ from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authentication import TokenAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
+from todo import serializers
 
 
 
 class TodoViewSet(viewsets.ModelViewSet):
-    
-    #authentication_classes = [TokenAuthentication]
-    
+        
     queryset = Todo.objects.all()
-    serializer_class = TodoSerializer
+
+    #Check if users are authenticated if not only name can read
+    def get_serializer_class(self):
+        if self.request.user.is_authenticated:
+            serializer_class = TodoSerializer
+            return serializer_class
+        else:
+            serializer_class = TodoSerializerNotAuthenticated
+            return serializer_class
+
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [filters.OrderingFilter, filters.SearchFilter , DjangoFilterBackend]
-    #filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    
     ordering_fields = ['name']
     ordering = ['name']
+    
     search_fields = ['$name']
     #filterset_fields = {
     #    'name' : ['icontains'],
     #    }
     filterset_fields = ['status']
-    
+
     def create(self, request, *args, **kwargs):
         
         serializer = self.get_serializer(data=request.data)
