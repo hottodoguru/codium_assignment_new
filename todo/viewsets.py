@@ -1,7 +1,4 @@
 from rest_framework import viewsets
-from .models import Todo
-from .serializers import TodoSerializer, UserSerializer, TodoSerializerNotAuthenticated
-
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework import viewsets, status,permissions, filters
@@ -10,9 +7,10 @@ from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authentication import TokenAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
-from todo import serializers
 
-
+from .models import Todo
+from .serializers import TodoSerializer, UserSerializer, TodoSerializerNotAuthenticated
+from .permission import TodoPermission, IsOwnerOrReadOnly
 
 class TodoViewSet(viewsets.ModelViewSet):
         
@@ -27,16 +25,14 @@ class TodoViewSet(viewsets.ModelViewSet):
             serializer_class = TodoSerializerNotAuthenticated
             return serializer_class
 
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     filter_backends = [filters.OrderingFilter, filters.SearchFilter , DjangoFilterBackend]
     
     ordering_fields = ['name']
     ordering = ['name']
     
     search_fields = ['$name']
-    #filterset_fields = {
-    #    'name' : ['icontains'],
-    #    }
+    
     filterset_fields = ['status']
 
     def create(self, request, *args, **kwargs):

@@ -114,7 +114,12 @@ class TodoSerializer(serializers.ModelSerializer):
         extra_kwargs = {
                         'owner': {'read_only': True}
                     }
-        
+    def to_representation(self, instance):
+        user = self.context['request'].user
+        if user.is_authenticated and instance.owner == user :
+            return super().to_representation(instance)
+        else:
+            return {'name' : instance.name}
 
 class TodoSerializerNotAuthenticated(serializers.ModelSerializer):
 
