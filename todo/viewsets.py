@@ -20,9 +20,14 @@ class TodoViewSet(viewsets.ModelViewSet):
     queryset = Todo.objects.all()
     serializer_class = TodoSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter , DjangoFilterBackend]
+    #filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = ['name']
     ordering = ['name']
+    search_fields = ['$name']
+    #filterset_fields = {
+    #    'name' : ['icontains'],
+    #    }
     filterset_fields = ['status']
     
     def create(self, request, *args, **kwargs):
