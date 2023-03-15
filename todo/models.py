@@ -22,3 +22,10 @@ class Todo(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     date = models.DateTimeField(auto_now=True)
 
+
+
+class Log(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    name_log = models.CharField(max_length = 200, null=True )
+    action = models.CharField(max_length=100)
+    timestamp = models.DateTimeField()

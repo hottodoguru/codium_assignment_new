@@ -1,4 +1,4 @@
-from .models import Todo
+from .models import Todo, Log
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers, validators
 from django.contrib.auth import authenticate
@@ -127,3 +127,9 @@ class TodoSerializerNotAuthenticated(serializers.ModelSerializer):
         model = Todo
         fields = ['name']
         
+
+#For Operation Logging
+class LogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Log
+        fields = '__all__'

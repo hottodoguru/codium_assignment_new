@@ -1,5 +1,5 @@
 from rest_framework import routers
-from todo.viewsets import TodoViewSet
+from todo.viewsets import TodoViewSet, LogListViewSet
 
 from django.contrib import admin
 from django.urls import path, include
@@ -20,5 +20,6 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(),name='token_refresh'),
     path('login/', LoginView.as_view(), name='login'),
+    path('log/', LogListViewSet.as_view(), name='log')
 ]
 urlpatterns += router.urls
