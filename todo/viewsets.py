@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 
 from datetime import datetime
 
@@ -15,6 +16,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Todo, Log
 from .serializers import TodoSerializer, UserSerializer, TodoSerializerNotAuthenticated, LogSerializer
 from .permission import TodoPermission, IsOwnerOrReadOnly
+
+from openpyxl import Workbook
 
 class TodoViewSet(viewsets.ModelViewSet):
         
@@ -92,10 +95,41 @@ class TodoViewSet(viewsets.ModelViewSet):
                 timestamp=datetime.now(),
             )
         log.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def export_to_excel(self, request, *args, **kwargs):
+        todos = self.get_queryset()
+
+        #Create Workbook
+        wb = Workbook()
+        ws = wb.active
+
+        #Write Header
+        headers = ['ID','Name', 'Description', 'Status', 'Owner', 'Date of Changed']
+        ws.append(headers)
+
+        #write data to worksheet
+        for todo in todos:
+            owner_user = todo.owner
+            username = owner_user.username
+            row = [todo.id, todo.name, todo.description, todo.status, username, todo.date]
+            ws.append(row)
+            
+        file_name = 'todo_export.xlsx'
+        content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+        # Create response object with file attachment
+        response = HttpResponse(content_type=content_type)
+        response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+        # Save workbook to response
+        wb.save(response)
+
+        return response
+
 
         
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        
 
     
     
