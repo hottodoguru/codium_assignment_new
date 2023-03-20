@@ -26,6 +26,6 @@ class Todo(models.Model):
 
 class Log(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    name_log = models.CharField(max_length = 200, null=True )
+    name_log = models.CharField(max_length = 200, null=True)
     action = models.CharField(max_length=100)
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(auto_now_add = True)

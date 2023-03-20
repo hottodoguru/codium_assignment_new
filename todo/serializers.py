@@ -1,11 +1,11 @@
-from .models import Todo, Log
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import serializers, validators
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import serializers, validators
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from .models import Todo, Log
 
 class LoginSerializer(serializers.Serializer):
     """
@@ -86,26 +86,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 
-#class LoginSerializer(serializers.Serializer):
-#    username = serializers.CharField()
-#    password = serializers.CharField()
-#
-#    def validate(self, data):
-#        user = authenticate(username=data['username'], password=data['password'])
-#        if user and user.is_active:
-#            refresh = RefreshToken.for_user(user)
-#            return {
-#                'user': user,
-#                'refresh': str(refresh),
-#                'access': str(refresh.access_token),
-#            }
-#        raise serializers.ValidationError('Incorrect credentials')
-
-
-
-
-
-
 class TodoSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -116,7 +96,7 @@ class TodoSerializer(serializers.ModelSerializer):
                     }
     def to_representation(self, instance):
         user = self.context['request'].user
-        if user.is_authenticated and instance.owner == user :
+        if user.is_authenticated and instance.owner == user:
             return super().to_representation(instance)
         else:
             return {'name' : instance.name}
@@ -125,11 +105,11 @@ class TodoSerializerNotAuthenticated(serializers.ModelSerializer):
 
     class Meta:
         model = Todo
-        fields = ['name']
+        fields = ('name', )
         
 
-#For Operation Logging
-class LogSerializer(serializers.ModelSerializer):
+
+class LogSerializer(serializers.ModelSerializer):  # For Operation Logging
     class Meta:
         model = Log
         fields = '__all__'

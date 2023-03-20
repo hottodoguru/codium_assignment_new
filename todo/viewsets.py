@@ -1,23 +1,24 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-
 from datetime import datetime
 
+from openpyxl import Workbook
 from rest_framework import viewsets, status,permissions, filters, generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authentication import TokenAuthentication
+from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Todo, Log
-from .serializers import TodoSerializer, UserSerializer, TodoSerializerNotAuthenticated, LogSerializer
-from .permission import TodoPermission, IsOwnerOrReadOnly
+from todo.models import Todo, Log
+from todo.serializers import TodoSerializer, UserSerializer, TodoSerializerNotAuthenticated, LogSerializer
+from todo.permission import TodoPermission, IsOwnerOrReadOnly
+from todo.functions import export_to_excel
 
-from openpyxl import Workbook
+
 
 class TodoViewSet(viewsets.ModelViewSet):
         
@@ -25,22 +26,19 @@ class TodoViewSet(viewsets.ModelViewSet):
 
     #Check if users are authenticated if not only name can read
     def get_serializer_class(self):
-        if self.request.user.is_authenticated:
-            serializer_class = TodoSerializer
-            return serializer_class
-        else:
-            serializer_class = TodoSerializerNotAuthenticated
-            return serializer_class
+        if self.request.user.is_authenticated: 
+            return TodoSerializer
+        return TodoSerializerNotAuthenticated
 
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     filter_backends = [filters.OrderingFilter, filters.SearchFilter , DjangoFilterBackend]
     
-    ordering_fields = ['name']
-    ordering = ['name']
+    ordering_fields = ('name', )
+    ordering = ('name', )
     
-    search_fields = ['$name']
+    search_fields = ('$name', )
     
-    filterset_fields = ['status']
+    filterset_fields = ('status', )
 
     def create(self, request, *args, **kwargs):
         
@@ -98,44 +96,13 @@ class TodoViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
     def export_to_excel(self, request, *args, **kwargs):
-        todos = self.get_queryset()
 
-        #Create Workbook
-        wb = Workbook()
-        ws = wb.active
+        export_function = export_to_excel(self,request)
 
-        #Write Header
-        headers = ['ID','Name', 'Description', 'Status', 'Owner', 'Date of Changed']
-        ws.append(headers)
-
-        #write data to worksheet
-        for todo in todos:
-            owner_user = todo.owner
-            username = owner_user.username
-            row = [todo.id, todo.name, todo.description, todo.status, username, todo.date]
-            ws.append(row)
-            
-        file_name = 'todo_export.xlsx'
-        content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-
-        # Create response object with file attachment
-        response = HttpResponse(content_type=content_type)
-        response['Content-Disposition'] = f'attachment; filename="{file_name}"'
-        # Save workbook to response
-        wb.save(response)
-
-        return response
+        return export_function
 
 
-        
-
-        
-
-    
-    
-    
-    
-class LogListViewSet(generics.ListAPIView):
+class LogListView(generics.ListAPIView):
     queryset = Log.objects.all()
     serializer_class = LogSerializer
 

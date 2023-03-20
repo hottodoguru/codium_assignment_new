@@ -1,5 +1,6 @@
 from rest_framework import routers
-from .viewsets import TodoViewSet
+
+from todo.viewsets import TodoViewSet
 
 app_name= "todo"
 

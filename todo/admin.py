@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Todo, Log
+
+from todo.models import Todo, Log
 # Register your models here.
 
 class TodoAdmin(admin.ModelAdmin):

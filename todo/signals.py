@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
-from .models import Todo
+from todo.models import Todo
 
 
 #@receiver(pre_save, sender= Todo)

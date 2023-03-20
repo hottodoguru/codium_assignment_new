@@ -1,5 +1,5 @@
 from rest_framework import routers
-from todo.viewsets import TodoViewSet, LogListViewSet
+from todo.viewsets import TodoViewSet, LogListView
 
 from django.contrib import admin
 from django.urls import path, include
@@ -20,7 +20,7 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(),name='token_refresh'),
     path('login/', LoginView.as_view(), name='login'),
-    path('log/', LogListViewSet.as_view(), name='log'),
+    path('log/', LogListView.as_view(), name='log'),
     path('export-todos', TodoViewSet.as_view({'get' : 'export_to_excel'}), name= 'export_todo'),
 ]
 urlpatterns += router.urls
