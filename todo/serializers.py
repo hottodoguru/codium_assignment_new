@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers, validators
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from datetime import datetime
 
-from .models import Todo, Log
+from todo.models import Todo, Log
 
 class LoginSerializer(serializers.Serializer):
     """
@@ -100,6 +101,36 @@ class TodoSerializer(serializers.ModelSerializer):
             return super().to_representation(instance)
         else:
             return {'name' : instance.name}
+        
+    def create(self, validated_data):
+        data = validated_data
+        user = self.context['request'].user
+        data['owner'] = user
+        instance = super().create(data)
+        log = Log(
+                user = user,
+                name_log = data['name'],
+                action = f'Created object: ' + str(data['name']),
+                timestamp = datetime.now(),
+            )
+        log.save()
+        return instance
+    
+    def update(self, instance, validated_data):
+        data = validated_data
+        user = self.context['request'].user
+        old_name = instance.name
+        instance = super().update(instance, validated_data)
+        log = Log(
+                user = user,
+                name_log = old_name,
+                action=f'Update object: ' + str(data['name']),
+                timestamp=datetime.now(),
+            )
+        log.save()
+        return instance
+    
+
 
 class TodoSerializerNotAuthenticated(serializers.ModelSerializer):
 

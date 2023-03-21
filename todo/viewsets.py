@@ -14,7 +14,7 @@ from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 
 from todo.models import Todo, Log
-from todo.serializers import TodoSerializer, UserSerializer, TodoSerializerNotAuthenticated, LogSerializer
+from todo.serializers import TodoSerializer, UserSerializer, LogSerializer
 from todo.permission import TodoPermission, IsOwnerOrReadOnly
 from todo.functions import export_to_excel
 
@@ -24,11 +24,9 @@ class TodoViewSet(viewsets.ModelViewSet):
         
     queryset = Todo.objects.all()
 
-    #Check if users are authenticated if not only name can read
+    #  Check if users are authenticated if not only name can read
     def get_serializer_class(self):
-        if self.request.user.is_authenticated: 
-            return TodoSerializer
-        return TodoSerializerNotAuthenticated
+        return TodoSerializer
 
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     filter_backends = [filters.OrderingFilter, filters.SearchFilter , DjangoFilterBackend]
@@ -45,55 +43,32 @@ class TodoViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        data = serializer.validated_data
-        data['owner'] = request.user
-
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        todo = get_object_or_404(Todo, name= data['name'])
-        log = Log(
-                user=request.user,
-                name_log = data['name'],
-                action=f'Created object: ' + str(data['name']),
-                timestamp=datetime.now(),
-            )
-        log.save()
         
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        old_name = instance.name
         self.perform_update(serializer)
-        data = serializer.validated_data
 
         headers = self.get_success_headers(serializer.data)
 
-        todo = get_object_or_404(Todo, name= data['name'])
-        log = Log(
-                user=request.user,
-                name_log = old_name,
-                action=f'Update object: ' + str(data['name']),
-                timestamp=datetime.now(),
-            )
-        log.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
     
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-
+    def perform_destroy(self, instance):
         log = Log(
-                user=request.user,
+                user=instance.owner,
                 name_log = instance.name,
                 action=f'Deleted object: ' + str(instance.name),
                 timestamp=datetime.now(),
             )
         log.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        instance.delete()
     
     def export_to_excel(self, request, *args, **kwargs):
 
