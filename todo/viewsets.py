@@ -15,7 +15,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from todo.models import Todo, Log
 from todo.serializers import TodoSerializer, UserSerializer, LogSerializer
-from todo.permission import TodoPermission, IsOwnerOrReadOnly
+from todo.permission import IsOwnerOrReadOnly
 from todo.functions import export_to_excel
 
 
@@ -24,7 +24,7 @@ class TodoViewSet(viewsets.ModelViewSet):
         
     queryset = Todo.objects.all()
 
-    #  Check if users are authenticated if not only name can read
+    # Check if users are authenticated if not only name can read
     def get_serializer_class(self):
         return TodoSerializer
 
@@ -38,27 +38,6 @@ class TodoViewSet(viewsets.ModelViewSet):
     
     filterset_fields = ('status', )
 
-    def create(self, request, *args, **kwargs):
-        
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        headers = self.get_success_headers(serializer.data)
-
-
-        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
     
     def perform_destroy(self, instance):
         log = Log(
@@ -68,13 +47,23 @@ class TodoViewSet(viewsets.ModelViewSet):
                 timestamp=datetime.now(),
             )
         log.save()
-        instance.delete()
+        super().perform_destroy
     
     def export_to_excel(self, request, *args, **kwargs):
 
-        export_function = export_to_excel(self,request)
+        export_workbook = export_to_excel(self,request)
+        
+        file_name = 'todo_export.xlsx'
+        content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
-        return export_function
+        # Create response object with file attachment
+        response = HttpResponse(content_type=content_type)
+        response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+        
+        # Save workbook to response
+        export_workbook.save(response)
+
+        return response
 
 
 class LogListView(generics.ListAPIView):

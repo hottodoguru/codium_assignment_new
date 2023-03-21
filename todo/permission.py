@@ -1,6 +1,5 @@
 from rest_framework import permissions
 
-from todo.serializers import TodoSerializerNotAuthenticated
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """
@@ -33,12 +32,6 @@ class TodoPermission(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         # Allow owners to update their own todos
-        if request.method == 'PUT' or request.method == 'DELETE' or request.method == 'PATCH' and obj.owner == request.user:
+        if request.method in ['PUT', 'DELETE', 'PATCH'] and obj.owner == request.user:
             return True
-
-        # Allow users to read only the name field of todos they don't own
-        if request.method == 'GET' and obj.owner != request.user:
-            view.serializer_class = TodoSerializerNotAuthenticated
-            return True
-
         return False

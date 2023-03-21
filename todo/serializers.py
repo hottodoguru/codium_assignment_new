@@ -91,7 +91,7 @@ class TodoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Todo
-        fields = ['name', 'description', 'status','owner','date']
+        fields = ('name', 'description', 'status','owner','date')
         extra_kwargs = {
                         'owner': {'read_only': True}
                     }
@@ -99,21 +99,18 @@ class TodoSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         if user.is_authenticated and instance.owner == user:
             return super().to_representation(instance)
-        else:
-            return {'name' : instance.name}
+        return {'name' : instance.name}
         
     def create(self, validated_data):
         data = validated_data
         user = self.context['request'].user
         data['owner'] = user
         instance = super().create(data)
-        log = Log(
-                user = user,
-                name_log = data['name'],
-                action = f'Created object: ' + str(data['name']),
-                timestamp = datetime.now(),
-            )
-        log.save()
+        Log.objects.create(
+            user=user,
+            name_log=data['name'],
+            action=f'Created object: ' + str(data['name']),
+        )
         return instance
     
     def update(self, instance, validated_data):
@@ -121,26 +118,20 @@ class TodoSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         old_name = instance.name
         instance = super().update(instance, validated_data)
-        log = Log(
-                user = user,
-                name_log = old_name,
-                action=f'Update object: ' + str(data['name']),
-                timestamp=datetime.now(),
-            )
-        log.save()
+        Log.objects.create(
+            user=user,
+            name_log=data['name'],
+            action=f'Created object: ' + str(data['name']),
+        )
         return instance
     
 
 
-class TodoSerializerNotAuthenticated(serializers.ModelSerializer):
 
-    class Meta:
-        model = Todo
-        fields = ('name', )
         
 
-
-class LogSerializer(serializers.ModelSerializer):  # For Operation Logging
+# For Operation Logging
+class LogSerializer(serializers.ModelSerializer):  
     class Meta:
         model = Log
         fields = '__all__'
