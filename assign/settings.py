@@ -75,19 +75,6 @@ renderer_classes = (
     'rest_framework.renderers.JSONRenderer',
 )
 
-# REST_FRAMEWORK = {
-#    'DEFAULT_AUTHENTICATION_CLASSES': authentication_classes,
-#    'DEFAULT_FILTER_BACKENDS': (
-#        'django_filters.rest_framework.DjangoFilterBackend',
-#    ),
-#    'DEFAULT_PERMISSION_CLASSES': (
-#        'rest_framework.permissions.IsAuthenticated',
-#    ),
-#    'DEFAULT_RENDERER_CLASSES': renderer_classes,
-#    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-#    'PAGE_SIZE': 40,
-#    'COERCE_DECIMAL_TO_STRING': False
-# }
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -117,7 +104,7 @@ DATABASES = {
 
 # Custom user model
 # https://docs.djangoproject.com/en/3.2/topics/auth/customizing/#substituting-a-custom-user-model
-# AUTH_USER_MODEL = 'todo.User'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
