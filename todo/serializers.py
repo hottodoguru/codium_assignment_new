@@ -1,12 +1,10 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers, validators
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from datetime import datetime
 
 from todo.models import Todo, Log
+
 
 class LoginSerializer(serializers.Serializer):
     """

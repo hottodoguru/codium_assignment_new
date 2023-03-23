@@ -1,9 +1,8 @@
-from django.shortcuts import render
-
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from todo.serializers import LoginSerializer
+
 
 class LoginView(APIView):
     def post(self, request):
