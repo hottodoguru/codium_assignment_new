@@ -1,10 +1,9 @@
-from .models import Todo
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import serializers, validators
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-
+from rest_framework import serializers, validators
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+from todo.models import Todo, Log
 
 
 class LoginSerializer(serializers.Serializer):
@@ -86,34 +85,51 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 
-#class LoginSerializer(serializers.Serializer):
-#    username = serializers.CharField()
-#    password = serializers.CharField()
-#
-#    def validate(self, data):
-#        user = authenticate(username=data['username'], password=data['password'])
-#        if user and user.is_active:
-#            refresh = RefreshToken.for_user(user)
-#            return {
-#                'user': user,
-#                'refresh': str(refresh),
-#                'access': str(refresh.access_token),
-#            }
-#        raise serializers.ValidationError('Incorrect credentials')
-
-
-
-
-
-
 class TodoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Todo
-        fields = ['name', 'description', 'status','owner','date']
+        fields = ('name', 'description', 'status','owner','date')
         extra_kwargs = {
                         'owner': {'read_only': True}
                     }
+    def to_representation(self, instance):
+        user = self.context['request'].user
+        if user.is_authenticated and instance.owner == user:
+            return super().to_representation(instance)
+        return {'name' : instance.name}
+        
+    def create(self, validated_data):
+        data = validated_data
+        user = self.context['request'].user
+        data['owner'] = user
+        instance = super().create(data)
+        Log.objects.create(
+            user=user,
+            name_log=data['name'],
+            action=f'Created object: ' + str(data['name']),
+        )
+        return instance
+    
+    def update(self, instance, validated_data):
+        data = validated_data
+        user = self.context['request'].user
+        old_name = instance.name
+        instance = super().update(instance, validated_data)
+        Log.objects.create(
+            user=user,
+            name_log=data['name'],
+            action=f'Created object: ' + str(data['name']),
+        )
+        return instance
+    
+
+
+
         
 
-
+# For Operation Logging
+class LogSerializer(serializers.ModelSerializer):  
+    class Meta:
+        model = Log
+        fields = '__all__'
